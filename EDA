@@ -1,0 +1,160 @@
+
+import matplotlib
+import numpy as np
+import pandas as pd
+import plotly.express as px
+dataset = pd.read_csv('netflix_titles_nov_2019.csv')
+
+df = pd.read_csv('NetflixOriginals.csv')
+features = ['title','Premiere','Runtime','IMDB_Score','Language']
+df1 = df[features]
+import waterfall_chart
+import matplotlib.pyplot as plt
+
+plt.rcParams.update({'figure.figsize':(7.5,5), 'figure.dpi':100})
+
+#print(dataset)
+
+print(df1.isnull().sum())
+
+
+
+
+
+dataset['country'].fillna('Missing',inplace=True)
+dataset['date_added'].fillna('Missing',inplace=True)
+dataset['rating'].fillna('Missing',inplace=True)
+dataset['cast'].fillna('Missing',inplace=True)
+dataset['director'].fillna('Missing',inplace=True)
+
+#print(dataset.isnull().sum())
+
+
+dataset['season_count'] = dataset.apply(lambda x : x['duration'].split(" ")[0] if "Season" in x['duration'] else "", axis = 1) #season_count for shows
+dataset['duration'] = dataset.apply(lambda x : x['duration'].split(" ")[0] if "Season" not in x['duration'] else "", axis = 1)
+
+
+dataset = dataset.rename(columns={"listed_in":"genre"})
+
+print(dataset.count())
+print(df1.count())
+
+
+fig_donut = px.pie(dataset, names='type', height=300, width=600, hole=0.7,
+
+title='The content made by Netflix',
+
+color_discrete_sequence=['#b20710', '#221f1f'])
+
+fig_donut.update_traces(hovertemplate=None, textposition='outside',
+
+textinfo='percent+label', rotation=90)
+
+fig_donut.update_layout(margin=dict(t=60, b=30, l=0, r=0), showlegend=False,
+
+plot_bgcolor='#333', paper_bgcolor='#333',
+
+title_font=dict(size=25, color='#8a8d93', family="Lato, sans-serif"),
+
+font=dict(size=17, color='#8a8d93'),
+
+hoverlabel=dict(bgcolor="#444", font_size=13,
+
+font_family="Lato, sans-serif"))
+
+fig_donut.show()
+
+
+
+#for col in dataset.columns:
+    #print(col)
+
+
+
+col ="release_year"
+
+vc2 = dataset[col].value_counts().reset_index().rename(columns = {col : "count", "index" : col})
+
+vc2['percent'] = vc2['count'].apply(lambda x : 100*x/sum(vc2['count']))
+
+vc2 = vc2.sort_values(col)
+
+#vc2.iloc[-10:, -1:]
+
+#print(vc2)
+
+
+
+plt.xlabel('year')
+plt.ylabel('count')
+plt.scatter(vc2['release_year'],vc2['count'], color='gray')
+plt.plot(vc2['release_year'],vc2['count'],color='red',linewidth=2)
+plt.show()
+
+df2 = pd.merge(dataset,df1, on ="title") #merging two dfs
+print(df2)
+
+
+
+print(df2.count())
+for cool in df2.columns:
+   print(cool)
+
+
+df_rating = pd.DataFrame(df2['genre'].value_counts()).reset_index().rename(columns={'index':'genre','genre':'count'})
+
+fig_bar = px.bar(df_rating, y='genre', x='count', title='Distribution of Genre',
+
+color_discrete_sequence=['#b20710'], text='count')
+
+fig_bar.update_xaxes(showgrid=False)
+
+fig_bar.update_yaxes(showgrid=False, categoryorder='total ascending', ticksuffix=' ', showline=False)
+
+fig_bar.update_traces(hovertemplate=None, marker=dict(line=dict(width=0)))
+
+fig_bar.update_layout(margin=dict(t=80, b=0, l=70, r=40),
+
+hovermode="y unified",
+
+xaxis_title=' ', yaxis_title=" ", height=400,
+
+plot_bgcolor='#333', paper_bgcolor='#333',
+
+title_font=dict(size=25, color='#8a8d93', family="Lato, sans-serif"),
+
+font=dict(color='#8a8d93'),
+
+legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5),
+
+hoverlabel=dict(bgcolor="black", font_size=13, font_family="Lato, sans-serif"))
+
+fig_bar.show()
+
+fig_abc = px.bar(df2, y=df2['rating'], x='IMDB_Score', title='Distribution of Rating',
+
+color_discrete_sequence=['#b20710'], text='IMDB_Score')
+
+fig_abc.update_xaxes(showgrid=False)
+
+fig_abc.update_yaxes(showgrid=False, categoryorder='total ascending', ticksuffix=' ', showline=False)
+
+fig_abc.update_traces(hovertemplate=None, marker=dict(line=dict(width=0)))
+
+fig_abc.update_layout(margin=dict(t=80, b=0, l=70, r=40),
+
+hovermode="y unified",
+
+xaxis_title=' ', yaxis_title=" ", height=400,
+
+plot_bgcolor='#333', paper_bgcolor='#333',
+
+title_font=dict(size=25, color='#8a8d93', family="Lato, sans-serif"),
+
+font=dict(color='#8a8d93'),
+
+legend=dict(orientation="h", yanchor="bottom", y=1, xanchor="center", x=0.5),
+
+hoverlabel=dict(bgcolor="black", font_size=13, font_family="Lato, sans-serif"))
+
+fig_abc.show()
